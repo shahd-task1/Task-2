@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>Student System</title>
+<style>
+  body { font-family: Arial; text-align: center; background: #f9f9f9; padding: 20px; }
+  h1 { font-size: 28px; }
+  table { width: 100%; border-collapse: collapse; margin: 20px auto; background: white; }
+  th, td { border: 1px solid #999; padding: 10px; }
+  th { background: #222; color: white; }
+  .pass { color: green; font-weight: bold; }
+  .fail { color: red; font-weight: bold; }
+  .box { background: white; padding: 15px; margin-top: 20px; border: 1px solid #ddd; }
+</style>
+</head>
+<body>
+
+<h1>نظام إدارة الطلاب - Student System</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>الاسم</th>
+      <th>الدرجات</th>
+      <th>المتوسط</th>
+      <th>التقدير</th>
+      <th>الحضور</th>
+      <th>النتيجة</th>
+    </tr>
+  </thead>
+  <tbody id="studentsTable"></tbody>
+</table>
+
+<div class="box">
+  <h3>لجنة الرأفة</h3>
+  <p id="mercyText"></p>
+  <p id="mercyAvg"></p>
+</div>
+
+<script>
+class Student {
+  constructor(id, name, grades, attendance) {
+    this.id = id;
+    this.name = name;
+    this.grades = grades;
+    this.attendance = attendance;
+  }
+  getAverage() {
+    let sum = this.grades.reduce((total, g) => total + g, 0);
+    return sum / this.grades.length;
+  }
+  getGrade(avg) {
+    if (avg >= 90) return "A";
+    else if (avg >= 80) return "B";
+    else if (avg >= 70) return "C";
+    else if (avg >= 60) return "D";
+    else if (avg >= 50) return "E";
+    else return "F";
+  }
+  getStatus() {
+    let avg = this.getAverage();
+    if (avg >= 50 && this.attendance >= 75) return "ناجح";
+    else return "يحتاج مراجعة";
+  }
+}
+
+let studentsList = [
+  new Student(1, "Shahd", [85, 90, 78], 95),
+  new Student(2, "Ahmed", [72, 68, 75], 80),
+  new Student(3, "Sara", [42, 45, 48], 70),
+  new Student(4, "Omar", [40, 44, 47], 85)
+];
+
+// رسم الجدول في الصفحة
+let tbody = document.getElementById("studentsTable");
+studentsList.forEach(s => {
+  let avg = s.getAverage();
+  let status = s.getStatus();
+  tbody.innerHTML += `
+    <tr>
+      <td>${s.name}</td>
+      <td>${s.grades.join(" - ")}</td>
+      <td>${avg.toFixed(1)}</td>
+      <td>${s.getGrade(avg)}</td>
+      <td>${s.attendance}%</td>
+      <td class="${status === "ناجح" ? "pass" : "fail"}">${status}</td>
+    </tr>`;
+  console.log(`الاسم: ${s.name} | المتوسط: ${avg} | التقدير: ${s.getGrade(avg)} | النتيجة: ${status}`);
+});
+
+// لجنة الرأفة
+let struggling = studentsList.filter(s => s.getAverage() >= 40 && s.getAverage() <= 49);
+let afterMercy = struggling.map(s => ({
+  name: s.name,
+  oldAverage: s.getAverage(),
+  newAverage: s.getAverage() + 5
+}));
+console.log("المتعثرين بعد الرأفة:", afterMercy);
+let total = afterMercy.reduce((sum, s) => sum + s.newAverage, 0);
+let mercyAverage = afterMercy.length > 0 ? total / afterMercy.length : 0;
+console.log("متوسط المتعثرين بعد الرأفة:", mercyAverage);
+
+document.getElementById("mercyText").innerText = "الطلاب المتعثرين: " + afterMercy.map(s => `${s.name} (${s.oldAverage.toFixed(1)} -> ${s.newAverage.toFixed(1)})`).join(" ، ");
+document.getElementById("mercyAvg").innerText = "متوسط المتعثرين بعد الرأفة: " + mercyAverage.toFixed(2);
+</script>
+</body>
+</html>
